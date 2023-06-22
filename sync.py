@@ -11,6 +11,7 @@ def	initial_sync(source_folder, replica_folder, log_file):
 	sync_folders(source_folder, replica_folder, log_file)
 
 	# Continuosly monitor and sync in the set interval
+	# Function to copy new and modified files or folders to replica
 	while True:
 		time.sleep(args.interval)
 		sync_folders(source_folder, replica_folder, log_file)
@@ -22,7 +23,8 @@ def	sync_folders(source_folder, replica_folder, log_file):
     
 	for file in diffs.right_only:
 		file_path = os.path.join(replica_folder, file)
-		if: os.path.isfile(file_path)
+		# Remove files or folders in the replica that are NOT present in the source
+		if os.path.isfile(file_path):
 			os.remove(file_path)
 			log_messages.append(f'Removed file: {file_path}')
 		else:
@@ -39,12 +41,15 @@ def	sync_folders(source_folder, replica_folder, log_file):
 			# Calculate SHA-256
 			src_hash = calculate_sha256_hash(src_file)
 			dst_hash = calculate_sha256_hash(dst_file)
+			# Compare copied content
 			if src_hash == dst_hash:
 				log_messages.append(f'Hash match for: {dst_file}')
 			else:
 				log_messages.append(f'Hash mismatch for: {dst_file}')
 				# Handle mismatch and retry
 				attempts = 0
+				# Using SHA-256 it compares the files to search for a corruption,
+				#	if it's wrong, it attempts to overwrite the file with the source.
 				while attempts <= 3:
 					shutil.copy2(src_file, dst_file)
 					log_messages.append(f'Overwrote mismatched file: {dst_file}')
@@ -58,7 +63,7 @@ def	sync_folders(source_folder, replica_folder, log_file):
 		else:
 			shutil.copytree(src_file, dst_file)
 			log_messages.append(f'Copied directory: {src_file} > {dst_file}')
-	# Log every action to console and log file
+	# Log actions and print them to console and log file
 	log_to_file(log_file, log_messages)
 	log_to_console(log_messages)
 
@@ -76,10 +81,5 @@ def	log_to_file():
 
 def	log_to_console():
 
-# Compare copied content
-# Remove files or folders in the replica that are NOT present in the source
-# Function to copy new and modified files or folders to replica
-# Using SHA-256 it compares the files to search for a corruption,
-#	if it's wrong, it deletes and attempts to overwrite the file with the source.
-# Log actions and print them to console
+
 # Parsing for terminal commands
