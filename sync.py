@@ -18,7 +18,7 @@ def	initial_sync(source_folder, replica_folder, log_file):
 
 # Function to sync folders and write actions to log file
 def	sync_folders(source_folder, replica_folder, log_file):
-	diffs = filecmp.dircmp(source_folder, replica_folder)
+	diffs = filecmp.dircmp(source_folder, replica_folder) #os.scandir can be more efficient
 	log_messages = []
     
 	for file in diffs.right_only:
@@ -35,9 +35,10 @@ def	sync_folders(source_folder, replica_folder, log_file):
 		src_file = os.path.join(source_folder, file)
 		dst_file = os.path.join(replica_folder, file)
 		if os.path.isfile(src_file):
-			shutil.copy2(src_file, dst_file)
+			shutil.copy2(src_file, dst_file) # It's possible to use shutil.copy for files that don't require metadata preservation
 			log_messages.append(f'Copied file: {src_file} to {dst_file}')
 
+			# It's possible to avoid unnecessary rehashing of every file, and only do it if 'modified date' or 'size' changes
 			# Calculate SHA-256
 			src_hash = calc_sha256(src_file)
 			dst_hash = calc_sha256(dst_file)
