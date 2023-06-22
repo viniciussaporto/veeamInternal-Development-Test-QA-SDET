@@ -39,21 +39,21 @@ def	sync_folders(source_folder, replica_folder, log_file):
 			log_messages.append(f'Copied file: {src_file} to {dst_file}')
 
 			# Calculate SHA-256
-			src_hash = calculate_sha256_hash(src_file)
-			dst_hash = calculate_sha256_hash(dst_file)
+			src_hash = calc_sha256(src_file)
+			dst_hash = calc_sha256(dst_file)
 			# Compare copied content
 			if src_hash == dst_hash:
 				log_messages.append(f'Hash match for: {dst_file}')
 			else:
+				# Handle mismatch
 				log_messages.append(f'Hash mismatch for: {dst_file}')
-				# Handle mismatch and retry
 				attempts = 0
 				# Using SHA-256 it compares the files to search for a corruption,
 				#	if it's wrong, it attempts to overwrite the file with the source.
 				while attempts <= 3:
 					shutil.copy2(src_file, dst_file)
 					log_messages.append(f'Overwrote mismatched file: {dst_file}')
-					dst_hash = calculate_sha256_hash(dst_file)
+					dst_hash = calc_sha256(dst_file)
 					if src_hash == dst_hash:
 						log_messages.append(f'Hash matched after {attempts} attemps for file: {dst_file}')
 						break
@@ -67,7 +67,7 @@ def	sync_folders(source_folder, replica_folder, log_file):
 	log_to_file(log_file, log_messages)
 	log_to_console(log_messages)
 
-def	calculate_sha256_hash(file_path):
+def	calc_sha256(file_path):
 	with open(file_path, 'rb') as file:
 		hasher = hashlib.sha256()
 		while True:
@@ -77,9 +77,23 @@ def	calculate_sha256_hash(file_path):
 			hasher.update(data)
 	return hasher.hexdigest()
 
-def	log_to_file():
+def	log_to_file(log_file, messages):
+	with open(log_file, 'a') as file:
+		for message in messages:
+			file.write(message + '\n')
 
-def	log_to_console():
+def	log_to_console(messages):
+	for message in messages:
+		print(message)
 
+if __name__ == '__main__':
+	# Parsing for terminal commands
+	parser = argparse.ArgumentParser('Folder Sync Program')
+	parser.add_argument('source', help='Path to source folder')
+	parser.add_argument('replica', help='Path to replica folder')
+	parser.add_argument('interval', help='Sync interval in seconds')
+	parser.add_argument('log_file', help='Path to log file')
+	args = parser.parse_args()
 
-# Parsing for terminal commands
+	#Running
+	initial_sync(args.source, args.replica, args.log_file)
