@@ -78,6 +78,7 @@ def	log_to_file(log_file, messages):
 	with open(log_file, 'a') as file:
 		for message in messages:
 			file.write(message + '\n')
+			file.flush() # In case of program crashing, it writes the logs instantly
 
 def	log_to_console(messages):
 	for message in messages:
