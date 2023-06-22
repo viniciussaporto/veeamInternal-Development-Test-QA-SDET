@@ -13,7 +13,7 @@ def	initial_sync(source_folder, replica_folder, log_file):
 	# Continuosly monitor and sync in the set interval
 	# Function to copy new and modified files or folders to replica
 	while True:
-		time.sleep(args.interval)
+		time.sleep(int(args.interval))
 		sync_folders(source_folder, replica_folder, log_file)
 
 # Function to sync folders and write actions to log file
